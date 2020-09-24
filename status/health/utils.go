@@ -15,8 +15,27 @@
 package health
 
 import (
+	"regexp"
+
+	werror "github.com/palantir/witchcraft-go-error"
 	"github.com/palantir/witchcraft-go-server/conjure/witchcraft/api/health"
 )
+
+const slsHealthNameRegex = "^[A-Z_]+$"
+
+func NewCheckType(checkType string) (health.CheckType, error) {
+	if !regexp.MustCompile(slsHealthNameRegex).MatchString(checkType) {
+		return "", werror.Error("check is not a valid SLS health check name")
+	}
+	return health.CheckType(checkType), nil
+}
+
+func MustNewCheckType(checkType string) health.CheckType {
+	if !regexp.MustCompile(slsHealthNameRegex).MatchString(checkType) {
+		panic(werror.Error("check is not a valid SLS health check name"))
+	}
+	return health.CheckType(checkType)
+}
 
 // UnhealthyHealthCheckResult returns an unhealthy health check result with type checkType and message message.
 func UnhealthyHealthCheckResult(checkType health.CheckType, message string) health.HealthCheckResult {
